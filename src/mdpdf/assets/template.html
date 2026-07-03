@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="__MDPDF_LANG__">
+<head>
+<meta charset="utf-8">
+<title>__MDPDF_TITLE__</title>
+<style id="pygments-css">
+__MDPDF_PYGMENTS_CSS__
+</style>
+<style id="default-theme">
+__MDPDF_DEFAULT_CSS__
+</style>
+<style id="page-options">
+__MDPDF_OPTIONS_CSS__
+</style>
+<style id="user-theme">
+__MDPDF_USER_CSS__
+</style>
+</head>
+<body>
+__MDPDF_BODY__
+<script>
+__MDPDF_MERMAID_JS__
+</script>
+<script>
+window.PagedConfig = { auto: false };
+</script>
+<script>
+__MDPDF_PAGED_JS__
+</script>
+<script>
+(async () => {
+  window.__renderErrors = [];
+  try {
+    if (document.querySelector('.mermaid') && window.mermaid) {
+      mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'strict' });
+      await mermaid.run({ querySelector: '.mermaid' });
+    }
+  } catch (e) {
+    window.__renderErrors.push('mermaid: ' + (e && e.message ? e.message : e));
+  }
+  try {
+    await window.PagedPolyfill.preview();
+  } catch (e) {
+    window.__renderErrors.push('pagedjs: ' + (e && e.message ? e.message : e));
+  }
+  window.__renderDone = true;
+})();
+</script>
+</body>
+</html>

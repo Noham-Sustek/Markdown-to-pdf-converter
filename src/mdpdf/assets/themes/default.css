@@ -1,0 +1,231 @@
+/* ==========================================================================
+   Thème par défaut MDPDF — A4 portrait, style sobre et professionnel.
+
+   Pour personnaliser : créez votre propre fichier .css et passez-le avec
+   --theme (CLI) ou le sélecteur de thème (interface graphique). Il est
+   chargé APRÈS celui-ci : il suffit d'y redéfinir ce que vous voulez.
+   ========================================================================== */
+
+/* ---- Mise en page A4 ---------------------------------------------------- */
+@page {
+  size: A4 portrait;
+  margin: 22mm 18mm 20mm 18mm;
+
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 9pt;
+    color: #666666;
+  }
+  @top-right {
+    content: string(doctitle);
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 8.5pt;
+    color: #888888;
+  }
+}
+
+/* Page de couverture : ni en-tête ni pied de page */
+.cover { page: cover; }
+@page cover {
+  @bottom-center { content: none; }
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-left { content: none; }
+}
+
+/* ---- Typographie générale ----------------------------------------------- */
+:root {
+  --color-text: #1a1a2e;
+  --color-heading: #16324f;
+  --color-accent: #2a6f97;
+  --color-muted: #666666;
+  --color-border: #d9dee3;
+  --color-code-bg: #f5f7f9;
+}
+
+html {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+
+body { margin: 0; }
+
+p { margin: 0.45em 0 0.9em; orphans: 3; widows: 3; }
+
+a { color: var(--color-accent); text-decoration: none; }
+
+/* ---- Titres -------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Segoe UI Semibold", "Segoe UI", Arial, sans-serif;
+  color: var(--color-heading);
+  line-height: 1.25;
+  break-after: avoid;
+  margin: 1.3em 0 0.5em;
+}
+
+h1 {
+  font-size: 21pt;
+  string-set: doctitle content(text);
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.25em;
+}
+h2 { font-size: 15.5pt; border-bottom: 1px solid var(--color-border); padding-bottom: 0.2em; }
+h3 { font-size: 12.5pt; }
+h4 { font-size: 11pt; }
+
+/* Chaque document fusionné commence sur une nouvelle page */
+section.doc { break-before: page; }
+section.doc.first-doc { break-before: auto; }
+
+/* ---- Page de couverture --------------------------------------------------- */
+.cover {
+  text-align: center;
+  break-after: page;
+}
+.cover-logo {
+  max-width: 55mm;
+  max-height: 35mm;
+  margin: 30mm auto 8mm;
+  display: block;
+}
+.cover h1 {
+  font-size: 26pt;
+  border: none;
+  margin-top: 45mm;
+  string-set: none;
+}
+.cover-logo + h1 { margin-top: 12mm; }
+.cover-date { color: var(--color-muted); font-size: 11pt; }
+
+/* ---- Sommaire -------------------------------------------------------------- */
+.toc { break-after: page; }
+.toc-title {
+  font-size: 17pt;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.25em;
+  string-set: none;
+}
+.toc ol {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.toc ol ol { padding-left: 1.4em; }
+.toc li { margin: 0.25em 0; }
+.toc a {
+  display: flex;
+  align-items: baseline;
+  color: var(--color-text);
+  text-decoration: none;
+}
+/* Numéro de page aligné à droite (leader() n'est pas géré par paged.js). */
+.toc a::after {
+  content: target-counter(attr(href url), page);
+  margin-left: auto;
+  padding-left: 0.6em;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Code ------------------------------------------------------------------ */
+code, pre, .monospaced {
+  font-family: "Consolas", "Cascadia Code", "Courier New", monospace;
+  font-size: 9pt;
+}
+
+code {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 0.08em 0.35em;
+}
+
+pre {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.7em 0.9em;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+pre code { background: none; border: none; padding: 0; }
+
+/* Blocs de code AsciiDoc */
+.listingblock .content { background: var(--color-code-bg); }
+.listingblock pre { margin: 0.3em 0; }
+
+/* ---- Tableaux ---------------------------------------------------------------- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8em 0;
+  font-size: 9.5pt;
+}
+th, td {
+  border: 1px solid var(--color-border);
+  padding: 0.4em 0.65em;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: #eef2f5;
+  color: var(--color-heading);
+  font-weight: 600;
+}
+tr { break-inside: avoid; }
+
+/* ---- Citations, listes, divers -------------------------------------------------- */
+blockquote, .quoteblock {
+  margin: 0.8em 0;
+  padding: 0.3em 1em;
+  border-left: 3px solid var(--color-accent);
+  color: #444444;
+  background: #f8fafb;
+}
+
+ul, ol { margin: 0.4em 0 0.9em; padding-left: 1.6em; }
+li { margin: 0.15em 0; }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.4em 0;
+}
+
+img { max-width: 100%; }
+
+/* Blocs "admonition" AsciiDoc (NOTE, WARNING, …) */
+.admonitionblock {
+  margin: 0.8em 0;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  background: #f8fafb;
+  break-inside: avoid;
+}
+.admonitionblock td.icon { font-weight: 700; padding: 0.5em 0.8em; white-space: nowrap; }
+.admonitionblock td.content { padding: 0.5em 0.8em; border: none; }
+.admonitionblock table { margin: 0; border: none; }
+.admonitionblock td { border: none; }
+
+/* ---- Diagrammes ------------------------------------------------------------------ */
+.mermaid, figure.diagram {
+  text-align: center;
+  margin: 0.9em auto;
+  break-inside: avoid;
+}
+figure.diagram svg, .mermaid svg { max-width: 100%; height: auto; }
+
+.diagram-error {
+  border: 1px dashed #c0392b;
+  background: #fdf3f2;
+  padding: 0.6em 0.9em;
+  color: #7b241c;
+}
+
+/* ---- Notes de bas de page --------------------------------------------------------- */
+.footnotes { font-size: 9pt; color: #444444; }
+.footnotes hr { margin-top: 2em; }

@@ -1,0 +1,18 @@
+# Ressources téléchargées au build (jamais commitées)
+vendor/
+src/mdpdf/assets/vendor/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller
+build/
+dist/
+
+# Sorties de test
+*.pdf
+!docs/**/*.pdf

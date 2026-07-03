@@ -1,0 +1,122 @@
+name: Build & Release
+
+on:
+  push:
+    branches: ["main", "claude/**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  # Test rapide de la chaîne de conversion (Linux, plus rapide que Windows).
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Télécharger les ressources embarquées
+        run: python scripts/fetch_assets.py
+
+      - name: Installer Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Convertir les exemples (fichier par fichier)
+        run: |
+          PYTHONPATH=src python -m mdpdf.cli examples/ --output-dir /tmp/out
+          test -f /tmp/out/exemple.pdf && test -f /tmp/out/exemple-2.pdf
+
+      - name: Convertir les exemples (fusion)
+        run: |
+          PYTHONPATH=src python -m mdpdf.cli examples/ --merge \
+            --title "Manuel de démonstration" -o /tmp/out/manuel.pdf
+          test -f /tmp/out/manuel.pdf
+
+      - name: Vérifier le contenu des PDF
+        run: |
+          pip install pypdf
+          python - <<'EOF'
+          from pypdf import PdfReader
+          reader = PdfReader("/tmp/out/manuel.pdf")
+          assert len(reader.pages) >= 5, f"trop peu de pages : {len(reader.pages)}"
+          text = "".join(p.extract_text() for p in reader.pages)
+          assert "Sommaire" in text, "sommaire absent"
+          assert "Rapport d'exemple Markdown" in text, "contenu markdown absent"
+          print(f"OK : {len(reader.pages)} pages")
+          EOF
+
+  build-windows:
+    runs-on: windows-latest
+    needs: test
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Télécharger les ressources embarquées
+        run: python scripts/fetch_assets.py
+
+      - name: Installer Chromium dans vendor/browsers
+        run: |
+          $env:PLAYWRIGHT_BROWSERS_PATH = "$PWD\vendor\browsers"
+          python -m playwright install chromium
+
+      - name: Construire le JRE minimal (jlink)
+        run: |
+          & "$env:JAVA_HOME\bin\jlink.exe" `
+            --add-modules java.base,java.desktop,java.datatransfer,java.logging,java.management,java.naming,java.sql,java.xml,jdk.unsupported `
+            --strip-debug --no-header-files --no-man-pages --compress zip-6 `
+            --output vendor\jre
+
+      - name: Compiler l'application (PyInstaller)
+        run: pyinstaller --noconfirm mdpdf.spec
+
+      - name: Assembler le paquet portable
+        run: |
+          Copy-Item -Recurse vendor dist\MDPDF\vendor
+          Copy-Item README.md dist\MDPDF\
+          Copy-Item -Recurse examples dist\MDPDF\examples
+          Compress-Archive -Path dist\MDPDF -DestinationPath MDPDF-windows-x64.zip
+          $size = [math]::Round((Get-Item MDPDF-windows-x64.zip).Length / 1MB, 1)
+          Write-Host "Archive : $size Mo"
+
+      - name: Test de fumée de l'exécutable
+        run: |
+          & dist\MDPDF\mdpdf.exe --version
+          & dist\MDPDF\mdpdf.exe examples\exemple.md -o $env:TEMP\smoke.pdf
+          if (-not (Test-Path $env:TEMP\smoke.pdf)) { throw "PDF non généré" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MDPDF-windows-x64
+          path: MDPDF-windows-x64.zip
+
+      - name: Publier la release (sur tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: MDPDF-windows-x64.zip
+          generate_release_notes: true

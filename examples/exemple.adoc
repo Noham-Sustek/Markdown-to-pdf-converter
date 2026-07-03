@@ -1,0 +1,63 @@
+= Rapport d'exemple AsciiDoc
+
+Ce document illustre la prise en charge d'AsciiDoc par *MDPDF*.
+
+== Mise en forme
+
+Du texte en *gras*, en _italique_, du `code inline` et une liste :
+
+* Premier élément
+* Deuxième élément
+** Sous-élément
+
+NOTE: Les blocs d'avertissement AsciiDoc sont pris en charge.
+
+WARNING: Celui-ci aussi.
+
+== Code source
+
+[source,python]
+----
+def convertir(chemin: str) -> str:
+    """Convertit un document en PDF."""
+    return chemin.replace(".adoc", ".pdf")
+----
+
+== Tableau
+
+[cols="1,2", options="header"]
+|===
+| Format | Extensions
+
+| Markdown
+| .md, .markdown
+
+| AsciiDoc
+| .adoc, .asciidoc
+|===
+
+== Diagramme Mermaid
+
+[mermaid]
+----
+sequenceDiagram
+    participant U as Utilisateur
+    participant M as MDPDF
+    U->>M: exemple.adoc
+    M-->>U: exemple.pdf
+----
+
+== Diagramme PlantUML
+
+[plantuml]
+----
+@startuml
+class Convertisseur {
+  +convertir(source) : Pdf
+}
+class Pdf {
+  +pages : int
+}
+Convertisseur --> Pdf : produit
+@enduml
+----

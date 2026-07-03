@@ -1,0 +1,35 @@
+/* =============================================================================
+   Exemple de thème personnalisé pour MDPDF.
+
+   Utilisation :  mdpdf rapport.md --theme charte-exemple.css
+   (ou via le champ « Thème CSS » de l'interface graphique)
+
+   Ce fichier est chargé APRÈS le thème par défaut : ne redéfinissez que ce
+   que vous voulez changer. Ci-dessous, les personnalisations les plus
+   courantes pour une charte d'entreprise.
+   ============================================================================= */
+
+/* Couleurs de la charte */
+:root {
+  --color-heading: #7b1e3c;   /* couleur des titres */
+  --color-accent: #b3345c;    /* couleur d'accent (bordures, liens) */
+}
+
+/* En-tête et pied de page sur chaque page */
+@page {
+  @top-left {
+    content: "Ma Société — Confidentiel";
+    font-size: 8.5pt;
+    color: #888888;
+  }
+  @bottom-left {
+    content: "Usage interne uniquement";
+    font-size: 8pt;
+    color: #aaaaaa;
+  }
+}
+
+/* Police différente pour le corps du texte */
+html {
+  font-family: Georgia, "Times New Roman", serif;
+}
