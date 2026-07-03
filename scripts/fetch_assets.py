@@ -19,6 +19,11 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
+# Console Windows en cp1252 : ne pas planter sur les caractères non encodables.
+for stream in (sys.stdout, sys.stderr):
+    if stream is not None and hasattr(stream, "reconfigure"):
+        stream.reconfigure(errors="replace")
+
 ROOT = Path(__file__).resolve().parent.parent
 VENDOR_JS = ROOT / "src" / "mdpdf" / "assets" / "vendor"
 VENDOR_PLANTUML = ROOT / "vendor" / "plantuml"

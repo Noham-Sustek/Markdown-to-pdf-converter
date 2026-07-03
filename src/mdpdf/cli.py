@@ -52,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Console Windows en cp1252 : ne pas planter sur « → » ou « ⚠ ».
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None and hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
+
     argv = list(sys.argv[1:] if argv is None else argv)
 
     if argv and argv[0].lower() == "gui":
