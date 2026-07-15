@@ -119,11 +119,31 @@ jobs:
           name: MDPDF-windows-x64
           path: MDPDF-windows-x64.zip
 
-      - name: Publier la release (sur tag v* ou déclenchement manuel avec release_tag)
-        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
+      # Une release est publiée si : un tag v* est poussé, OU le workflow est
+      # déclenché manuellement avec release_tag, OU le message du commit sur
+      # main commence par « release: vX.Y.Z ».
+      - name: Déterminer le tag de release
+        id: reltag
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          INPUT_TAG: ${{ inputs.release_tag }}
+        run: |
+          $tag = ""
+          if ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+            $tag = "${{ github.ref_name }}"
+          } elseif ($env:INPUT_TAG) {
+            $tag = $env:INPUT_TAG
+          } elseif ("${{ github.ref_name }}" -eq "main" -and $env:COMMIT_MSG -match '(?m)^release:\s*(v[\w.\-]+)') {
+            $tag = $Matches[1]
+          }
+          Write-Host "Tag de release : '$tag'"
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Publier la release
+        if: steps.reltag.outputs.tag != ''
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          tag_name: ${{ steps.reltag.outputs.tag }}
           target_commitish: ${{ github.sha }}
           files: MDPDF-windows-x64.zip
           generate_release_notes: true
