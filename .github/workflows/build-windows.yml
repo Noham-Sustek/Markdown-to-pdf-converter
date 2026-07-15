@@ -1,5 +1,9 @@
 name: Build & Release
 
+# Nécessaire pour que le workflow puisse créer le tag et la release.
+permissions:
+  contents: write
+
 on:
   push:
     branches: ["main", "claude/**"]
