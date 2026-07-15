@@ -40,6 +40,7 @@ Java) sont embarquées dans le dossier de l'application.
 
 ### Interface graphique
 
+Dans le CLI, entrez l'argument **`gui`** ou bien
 Double-cliquez sur **`MDPDF-GUI.exe`** :
 
 1. Glissez-déposez vos fichiers ou dossiers dans la liste (ou utilisez les
