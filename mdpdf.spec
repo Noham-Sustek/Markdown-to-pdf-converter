@@ -1,9 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""Spec PyInstaller : construit le dossier portable dist/MDPDF avec
-mdpdf.exe (console) et MDPDF-GUI.exe (fenêtré).
+"""Spec PyInstaller : construit le dossier portable dist/MDPDF avec un
+exécutable unique mdpdf.exe.
 
-Le dossier vendor/ (Chromium, JRE, plantuml.jar) est copié à côté des
-exécutables par le workflow de build, pas par PyInstaller.
+Double-clic (aucun argument) → l'interface graphique s'ouvre (et la fenêtre
+console est masquée) ; en ligne de commande, mdpdf.exe se comporte comme un
+outil console classique. Un seul fichier à faire approuver par l'IT.
+
+Le dossier vendor/ (Chromium, JRE, plantuml.jar) est copié à côté de
+l'exécutable par le workflow de build, pas par PyInstaller.
 """
 from PyInstaller.utils.hooks import collect_all
 
@@ -18,7 +22,7 @@ for package in ("playwright", "asciidoc", "tkinterdnd2"):
     binaries += b
     hiddenimports += h
 
-a_cli = Analysis(
+a = Analysis(
     ["scripts/entry_cli.py"],
     pathex=["src"],
     datas=datas,
@@ -26,21 +30,14 @@ a_cli = Analysis(
     hiddenimports=hiddenimports,
     noarchive=False,
 )
-pyz_cli = PYZ(a_cli.pure)
+pyz = PYZ(a.pure)
 
-a_gui = Analysis(
-    ["scripts/entry_gui.py"],
-    pathex=["src"],
-    datas=datas,
-    binaries=binaries,
-    hiddenimports=hiddenimports,
-    noarchive=False,
-)
-pyz_gui = PYZ(a_gui.pure)
-
-exe_cli = EXE(
-    pyz_cli,
-    a_cli.scripts,
+# console=True : indispensable pour l'usage en ligne de commande ; lors d'un
+# double-clic, l'application masque elle-même la fenêtre console avant
+# d'ouvrir l'interface (voir mdpdf.cli._maybe_hide_console).
+exe = EXE(
+    pyz,
+    a.scripts,
     [],
     exclude_binaries=True,
     name="mdpdf",
@@ -48,23 +45,10 @@ exe_cli = EXE(
     upx=False,
 )
 
-exe_gui = EXE(
-    pyz_gui,
-    a_gui.scripts,
-    [],
-    exclude_binaries=True,
-    name="MDPDF-GUI",
-    console=False,
-    upx=False,
-)
-
 coll = COLLECT(
-    exe_cli,
-    a_cli.binaries,
-    a_cli.datas,
-    exe_gui,
-    a_gui.binaries,
-    a_gui.datas,
+    exe,
+    a.binaries,
+    a.datas,
     name="MDPDF",
     upx=False,
 )

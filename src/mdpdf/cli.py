@@ -59,10 +59,9 @@ def main(argv: list[str] | None = None) -> int:
 
     argv = list(sys.argv[1:] if argv is None else argv)
 
-    if argv and argv[0].lower() == "gui":
-        from . import gui
-
-        return gui.main()
+    # Aucun argument (double-clic sur mdpdf.exe) ou « gui » → interface graphique.
+    if not argv or argv[0].lower() == "gui":
+        return _launch_gui()
 
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -91,6 +90,35 @@ def main(argv: list[str] | None = None) -> int:
         print("Interrompu.", file=sys.stderr)
         return 130
     return 0
+
+
+def _launch_gui() -> int:
+    from . import gui
+
+    _maybe_hide_console()
+    return gui.main()
+
+
+def _maybe_hide_console() -> None:
+    """Masque la fenêtre console sous Windows uniquement si l'application la
+    possède seule (cas du double-clic). Lancée depuis un terminal existant,
+    la console est partagée avec ce terminal : on n'y touche pas."""
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        arr = (ctypes.c_uint * 1)()
+        # GetConsoleProcessList renvoie le nombre de processus attachés à la
+        # console ; 1 = nous sommes seuls (double-clic), >1 = terminal partagé.
+        count = kernel32.GetConsoleProcessList(arr, 1)
+        if count <= 1:
+            hwnd = kernel32.GetConsoleWindow()
+            if hwnd:
+                ctypes.windll.user32.ShowWindow(hwnd, 0)  # SW_HIDE
+    except Exception:
+        pass  # ne jamais empêcher l'ouverture de l'interface pour ça
 
 
 if __name__ == "__main__":

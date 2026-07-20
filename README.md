@@ -40,8 +40,9 @@ Java) sont embarquées dans le dossier de l'application.
 
 ### Interface graphique
 
-Dans le CLI, entrez l'argument **`gui`** ou bien
-Double-cliquez sur **`MDPDF-GUI.exe`** :
+**Double-cliquez sur `mdpdf.exe`** (sans argument) — l'interface s'ouvre et la
+fenêtre console se masque automatiquement. En ligne de commande, `mdpdf gui`
+fait la même chose.
 
 1. Glissez-déposez vos fichiers ou dossiers dans la liste (ou utilisez les
    boutons « Ajouter »).
@@ -140,8 +141,7 @@ Contenu du dossier portable :
 
 ```
 MDPDF\
-├── mdpdf.exe            ← ligne de commande
-├── MDPDF-GUI.exe        ← interface graphique
+├── mdpdf.exe            ← interface graphique (double-clic) + ligne de commande
 ├── _internal\           ← Python + bibliothèques (PyInstaller)
 ├── vendor\
 │   ├── browsers\        ← Chromium hors-ligne

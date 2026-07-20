@@ -117,7 +117,6 @@ jobs:
           Write-Host "Contenu de la racine du paquet :"
           Get-ChildItem dist\MDPDF | Select-Object Name, Length | Format-Table
           if (-not (Test-Path dist\MDPDF\mdpdf.exe)) { throw "mdpdf.exe manquant dans le paquet" }
-          if (-not (Test-Path dist\MDPDF\MDPDF-GUI.exe)) { throw "MDPDF-GUI.exe manquant dans le paquet" }
           & dist\MDPDF\mdpdf.exe --version
           & dist\MDPDF\mdpdf.exe examples\exemple.md -o $env:TEMP\smoke.pdf
           if (-not (Test-Path $env:TEMP\smoke.pdf)) { throw "PDF non généré" }
