@@ -38,7 +38,15 @@ class Section:
 
 def slugify(text: str, used: set[str]) -> str:
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
-    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "section"
+    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    # Un identifiant CSS ne peut pas commencer par un chiffre : paged.js passe
+    # l'ancre à querySelector('#...') sans échappement pour calculer les numéros
+    # de page du sommaire, ce qui lèverait « is not a valid selector » pour un
+    # titre comme « 1. Introduction ». On préfixe alors le slug.
+    if not slug:
+        slug = "section"
+    elif slug[0].isdigit():
+        slug = f"section-{slug}"
     candidate = slug
     counter = 2
     while candidate in used:
