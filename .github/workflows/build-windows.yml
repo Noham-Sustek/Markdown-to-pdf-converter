@@ -45,13 +45,13 @@ jobs:
           PYTHONPATH=src python -m mdpdf.cli examples/ --output-dir /tmp/out
           test -f /tmp/out/exemple.pdf && test -f /tmp/out/exemple-2.pdf
 
-      - name: Convertir les exemples (fusion)
+      - name: Convertir les exemples (fusion, avec filigrane)
         run: |
           PYTHONPATH=src python -m mdpdf.cli examples/ --merge \
-            --title "Manuel de démonstration" -o /tmp/out/manuel.pdf
+            --title "Manuel de démonstration" --watermark "DÉMO" -o /tmp/out/manuel.pdf
           test -f /tmp/out/manuel.pdf
 
-      - name: Vérifier le contenu des PDF
+      - name: Vérifier le contenu des PDF (texte, images, signets)
         run: |
           pip install pypdf
           python - <<'EOF'
@@ -61,7 +61,12 @@ jobs:
           text = "".join(p.extract_text() for p in reader.pages)
           assert "Sommaire" in text, "sommaire absent"
           assert "Rapport d'exemple Markdown" in text, "contenu markdown absent"
-          print(f"OK : {len(reader.pages)} pages")
+          # Signets PDF (outline) générés depuis la hiérarchie des titres.
+          assert len(reader.outline) > 0, "aucun signet dans le PDF"
+          # Image locale embarquée en data URI (au moins une image dans le doc).
+          images = sum(len(getattr(p, "images", [])) for p in reader.pages)
+          assert images > 0, "aucune image embarquée"
+          print(f"OK : {len(reader.pages)} pages, {len(reader.outline)} signets, {images} image(s)")
           EOF
 
   build-windows:

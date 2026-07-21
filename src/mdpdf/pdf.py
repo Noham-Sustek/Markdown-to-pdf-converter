@@ -51,6 +51,10 @@ def html_to_pdf(html: str, output: Path, log: LogFn = print) -> None:
                 path=str(output),
                 prefer_css_page_size=True,
                 print_background=True,
+                # PDF tagué (accessible) + signets de navigation générés à
+                # partir de la hiérarchie des titres.
+                tagged=True,
+                outline=True,
             )
         finally:
             browser.close()

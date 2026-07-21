@@ -12,6 +12,11 @@ Java) sont embarquées dans le dossier de l'application.
   de page, admonitions AsciiDoc (`NOTE:`, `WARNING:`…)
 - **Coloration syntaxique** du code (Python, SQL, Java, etc. — via Pygments)
 - **Sommaire automatique** cliquable, avec numéros de page
+- **Signets PDF** : arborescence des titres dans le volet de navigation du
+  lecteur, et PDF tagué (accessible)
+- **Images locales embarquées** : les images `![](schema.png)` sont incluses
+  dans le PDF en base64 (aucun accès réseau, fichier autonome)
+- **Filigrane** en diagonale paramétrable (« CONFIDENTIEL », « BROUILLON »…)
 - **Diagrammes Mermaid** (flowcharts, séquences, Gantt…) rendus hors-ligne
 - **Diagrammes PlantUML** (séquences, classes, composants…) rendus hors-ligne
   grâce au JRE embarqué et au moteur de layout Smetana (pas besoin de Graphviz)
@@ -67,6 +72,9 @@ mdpdf chap1.md chap2.adoc chap3.md --merge --title "Manuel utilisateur" -o manue
 :: Avec charte graphique et logo
 mdpdf rapport.md --theme charte.css --logo logo.png
 
+:: Avec filigrane « CONFIDENTIEL » sur chaque page
+mdpdf rapport.md --watermark CONFIDENTIEL
+
 :: Toutes les options
 mdpdf --help
 ```
@@ -80,6 +88,7 @@ Principales options :
 | `--theme fichier.css` | CSS de personnalisation, appliqué après le thème par défaut |
 | `--logo image.png` | logo sur la page de couverture (mode fusion) |
 | `--header-left`, `--header-right`, `--footer` | textes d'en-tête/pied de page |
+| `--watermark "TEXTE"` | filigrane en diagonale sur chaque page (ex : CONFIDENTIEL) |
 | `--no-toc` / `--toc-depth N` | désactive ou règle la profondeur du sommaire |
 | `-d, --output-dir` | dossier de destination des PDF |
 

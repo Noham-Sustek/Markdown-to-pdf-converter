@@ -33,6 +33,7 @@ class Options:
     header_left: str | None = None
     header_right: str | None = None
     footer: str | None = None
+    watermark: str | None = None
     lang: str = "fr"
     output: Path | None = None
     output_dir: Path | None = None
@@ -77,6 +78,8 @@ def render_source(source: Path, log: LogFn) -> document.Section:
         body, title = render_asciidoc.render(text, log)
     else:
         body, title = render_markdown.render(text, log)
+    # Images locales → data URI, résolues par rapport au dossier du document.
+    body = document.embed_local_images(body, source.parent, log)
     return document.Section(
         html=body,
         title=title or source.stem,
@@ -135,6 +138,7 @@ def convert(inputs: list[Path], options: Options) -> list[Path]:
             header_left=options.header_left,
             header_right=options.header_right,
             footer_text=options.footer,
+            watermark=options.watermark,
             lang=options.lang,
         )
         log(f"Génération du PDF : {output}")
@@ -170,6 +174,7 @@ def convert(inputs: list[Path], options: Options) -> list[Path]:
                 header_left=options.header_left,
                 header_right=options.header_right,
                 footer_text=options.footer,
+                watermark=options.watermark,
                 lang=options.lang,
             )
             log(f"  → {output}")

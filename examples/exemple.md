@@ -50,6 +50,13 @@ GROUP BY titre;
 | Diagrammes Mermaid    |    ✔     |    ✔     |
 | Diagrammes PlantUML   |    ✔     |    ✔     |
 
+## Image locale
+
+Les images référencées localement sont automatiquement embarquées dans le PDF
+(aucun accès réseau) :
+
+![Schéma d'exemple](schema-exemple.png)
+
 ## Diagramme Mermaid
 
 ```mermaid

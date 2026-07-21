@@ -7,8 +7,10 @@ import html
 import mimetypes
 import re
 import unicodedata
+import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Callable
 
 from pygments.formatters import HtmlFormatter
 
@@ -17,6 +19,10 @@ from . import paths
 _HEADING_RE = re.compile(r"<h([1-4])([^>]*)>(.*?)</h\1>", re.DOTALL | re.IGNORECASE)
 _ID_ATTR_RE = re.compile(r'\bid\s*=\s*"([^"]*)"')
 _TAG_RE = re.compile(r"<[^>]+>")
+# Attribut src d'une balise <img> (guillemets simples ou doubles).
+_IMG_SRC_RE = re.compile(r'(<img\b[^>]*?\bsrc\s*=\s*)(["\'])(.*?)\2', re.IGNORECASE | re.DOTALL)
+
+LogFn = Callable[[str], None]
 
 
 @dataclass
@@ -104,8 +110,67 @@ def image_data_uri(path: Path) -> str:
     return f"data:{mime};base64,{data}"
 
 
+def embed_local_images(body: str, base_dir: Path, log: LogFn = print) -> str:
+    """Remplace les images locales des balises <img> par des data URI base64.
+
+    Les chemins relatifs sont résolus par rapport au dossier du document source.
+    Les images déjà en data: sont laissées telles quelles ; les images distantes
+    (http/https) ne sont PAS téléchargées (fonctionnement 100% hors-ligne) et
+    sont signalées. Le PDF produit est ainsi entièrement autonome.
+    """
+    def repl(match: re.Match[str]) -> str:
+        prefix, quote, src = match.group(1), match.group(2), match.group(3)
+        value = src.strip()
+        low = value.lower()
+        if low.startswith("data:"):
+            return match.group(0)
+        if low.startswith(("http://", "https://", "ftp://", "//")):
+            log(f"  ⚠ image distante non embarquée (hors-ligne) : {value}")
+            return match.group(0)
+        # Chemin de fichier local : on retire une éventuelle ancre / requête.
+        raw = urllib.parse.unquote(value.split("#", 1)[0].split("?", 1)[0])
+        path = Path(raw)
+        if not path.is_absolute():
+            path = base_dir / path
+        try:
+            uri = image_data_uri(path)
+        except OSError:
+            log(f"  ⚠ image introuvable, ignorée : {value}")
+            return match.group(0)
+        return f"{prefix}{quote}{uri}{quote}"
+
+    return _IMG_SRC_RE.sub(repl, body)
+
+
 def _css_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def watermark_css(text: str | None) -> str:
+    """Filigrane en diagonale répété sur chaque page (via paged.js)."""
+    if not text or not text.strip():
+        return ""
+    value = _css_string(text.strip())
+    # Le pseudo-élément est ajouté à chaque page produite par paged.js.
+    return (
+        ".pagedjs_pagebox { position: relative; }\n"
+        ".pagedjs_pagebox::after {\n"
+        f"  content: {value};\n"
+        "  position: absolute;\n"
+        "  top: 50%;\n"
+        "  left: 50%;\n"
+        "  transform: translate(-50%, -50%) rotate(-45deg);\n"
+        "  transform-origin: center;\n"
+        "  font-family: 'Segoe UI', Arial, sans-serif;\n"
+        "  font-size: 68pt;\n"
+        "  font-weight: 700;\n"
+        "  letter-spacing: 0.08em;\n"
+        "  color: rgba(200, 0, 0, 0.10);\n"
+        "  white-space: nowrap;\n"
+        "  pointer-events: none;\n"
+        "  z-index: 9999;\n"
+        "}"
+    )
 
 
 def page_options_css(
@@ -138,6 +203,7 @@ def assemble(
     header_left: str | None = None,
     header_right: str | None = None,
     footer_text: str | None = None,
+    watermark: str | None = None,
     lang: str = "fr",
 ) -> str:
     """Construit la page HTML complète, autonome (aucune ressource externe)."""
@@ -182,6 +248,7 @@ def assemble(
         "__MDPDF_DEFAULT_CSS__": default_css,
         "__MDPDF_OPTIONS_CSS__": page_options_css(header_left, header_right, footer_text),
         "__MDPDF_USER_CSS__": theme_css or "",
+        "__MDPDF_WATERMARK_CSS__": watermark_css(watermark),
         "__MDPDF_BODY__": "\n".join(body_parts),
         "__MDPDF_MERMAID_JS__": mermaid_js,
         "__MDPDF_PAGED_JS__": paged_js,

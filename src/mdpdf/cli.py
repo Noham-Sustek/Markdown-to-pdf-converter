@@ -43,6 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--header-left", help="texte d'en-tête gauche sur chaque page")
     parser.add_argument("--header-right", help="texte d'en-tête droit (remplace le titre courant)")
     parser.add_argument("--footer", help="texte de pied de page gauche sur chaque page")
+    parser.add_argument("--watermark",
+                        help="filigrane en diagonale sur chaque page (ex: CONFIDENTIEL)")
     parser.add_argument("--no-toc", action="store_true", help="ne pas générer de sommaire")
     parser.add_argument("--toc-depth", type=int, default=3, choices=range(1, 5),
                         help="profondeur du sommaire (1-4, défaut : 3)")
@@ -76,6 +78,7 @@ def main(argv: list[str] | None = None) -> int:
         header_left=args.header_left,
         header_right=args.header_right,
         footer=args.footer,
+        watermark=args.watermark,
         lang=args.lang,
         output=args.output,
         output_dir=args.output_dir,

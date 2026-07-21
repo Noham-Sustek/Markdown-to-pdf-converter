@@ -96,10 +96,14 @@ class App(_BaseTk):  # type: ignore[misc,valid-type]
         ttk.Entry(opts, textvariable=self.var_logo).grid(row=4, column=1, sticky="ew", padx=(8, 2), pady=2)
         ttk.Button(opts, text="…", width=3, command=self._pick_logo).grid(row=4, column=2, padx=(0, 8))
 
-        ttk.Label(opts, text="Dossier de sortie :").grid(row=5, column=0, sticky="w", padx=8)
+        ttk.Label(opts, text="Filigrane :").grid(row=5, column=0, sticky="w", padx=8)
+        self.var_watermark = tk.StringVar()
+        ttk.Entry(opts, textvariable=self.var_watermark).grid(row=5, column=1, columnspan=2, sticky="ew", padx=8, pady=2)
+
+        ttk.Label(opts, text="Dossier de sortie :").grid(row=6, column=0, sticky="w", padx=8)
         self.var_outdir = tk.StringVar()
-        ttk.Entry(opts, textvariable=self.var_outdir).grid(row=5, column=1, sticky="ew", padx=(8, 2), pady=2)
-        ttk.Button(opts, text="…", width=3, command=self._pick_outdir).grid(row=5, column=2, padx=(0, 8), pady=(0, 6))
+        ttk.Entry(opts, textvariable=self.var_outdir).grid(row=6, column=1, sticky="ew", padx=(8, 2), pady=2)
+        ttk.Button(opts, text="…", width=3, command=self._pick_outdir).grid(row=6, column=2, padx=(0, 8), pady=(0, 6))
 
         actions = ttk.Frame(self)
         actions.pack(fill="x", **pad)
@@ -191,6 +195,7 @@ class App(_BaseTk):  # type: ignore[misc,valid-type]
             toc=self.var_toc.get(),
             theme=Path(self.var_theme.get()) if self.var_theme.get().strip() else None,
             logo=Path(self.var_logo.get()) if self.var_logo.get().strip() else None,
+            watermark=self.var_watermark.get().strip() or None,
             output_dir=Path(self.var_outdir.get()) if self.var_outdir.get().strip() else None,
             log=self._log_queue.put,
         )
