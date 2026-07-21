@@ -120,6 +120,18 @@ Dans un fichier **AsciiDoc** :
     Alice -> Bob : bonjour
     ----
 
+### Sauts de page manuels
+
+Pour forcer un saut de page dans un document :
+
+- **Markdown** : insérez `<div class="page-break"></div>` (ou un HTML brut
+  `<div style="page-break-after: always"></div>`) à l'endroit voulu.
+- **AsciiDoc** : utilisez le saut de page natif `<<<` sur une ligne seule.
+
+> Note : le convertisseur n'utilise pas Pandoc ; la syntaxe LaTeX de Pandoc
+> (`\newpage`, `\pagebreak`) n'est donc pas interprétée — utilisez les formes
+> ci-dessus.
+
 ### Personnaliser l'apparence
 
 Créez un fichier CSS et passez-le avec `--theme` (ou le champ « Thème CSS »

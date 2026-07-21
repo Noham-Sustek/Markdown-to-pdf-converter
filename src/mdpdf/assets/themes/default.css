@@ -80,6 +80,23 @@ h4 { font-size: 11pt; }
 section.doc { break-before: page; }
 section.doc.first-doc { break-before: auto; }
 
+/* ---- Sauts de page manuels ------------------------------------------------
+   Dans un document Markdown :  <div class="page-break"></div>
+   Dans un document AsciiDoc :  <<<  (saut de page natif)
+   paged.js n'honore que les règles des feuilles de style (pas les styles
+   inline) : ces sélecteurs rattrapent donc aussi les styles inline générés
+   par AsciiDoc ou écrits à la main. */
+.page-break,
+.pagebreak,
+[style*="break-before"],
+[style*="page-break-before"] {
+  break-before: page;
+}
+[style*="break-after"],
+[style*="page-break-after"] {
+  break-after: page;
+}
+
 /* ---- Page de couverture --------------------------------------------------- */
 .cover {
   text-align: center;
