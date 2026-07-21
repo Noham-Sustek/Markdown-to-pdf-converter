@@ -7,6 +7,7 @@ Modes :
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -16,6 +17,29 @@ from .diagrams import LogFn
 MARKDOWN_SUFFIXES = {".md", ".markdown", ".mdown", ".mkd"}
 ASCIIDOC_SUFFIXES = {".adoc", ".asciidoc", ".asc"}
 ALL_SUFFIXES = MARKDOWN_SUFFIXES | ASCIIDOC_SUFFIXES
+
+# Marqueur d'emplacement du sommaire, sur une ligne seule. Accepté dans les deux
+# formats : [TOC], [[TOC]], [[_TOC_]], {{toc}}, <!-- toc -->, et toc::[] (AsciiDoc).
+_TOC_MARKER_RE = re.compile(
+    r"^[ \t]*(?:"
+    r"\[TOC\]|\[\[TOC\]\]|\[\[_TOC_\]\]|"
+    r"\{\{\s*toc\s*\}\}|"
+    r"<!--\s*toc\s*-->|"
+    r"toc::\[\]"
+    r")[ \t]*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def _apply_toc_marker(text: str, is_asciidoc: bool) -> str:
+    """Remplace un marqueur de sommaire par un bloc HTML repère qui survit au
+    rendu (passthrough AsciiDoc / bloc HTML Markdown). document.assemble y
+    insérera ensuite le sommaire."""
+    if is_asciidoc:
+        replacement = f"\n\n++++\n{document.TOC_PLACEHOLDER}\n++++\n\n"
+    else:
+        replacement = f"\n\n{document.TOC_PLACEHOLDER}\n\n"
+    return _TOC_MARKER_RE.sub(replacement, text)
 
 
 class ConversionError(RuntimeError):
@@ -74,7 +98,9 @@ def collect_sources(inputs: list[Path]) -> list[Path]:
 
 def render_source(source: Path, log: LogFn) -> document.Section:
     text = source.read_text(encoding="utf-8-sig")
-    if source.suffix.lower() in ASCIIDOC_SUFFIXES:
+    is_asciidoc = source.suffix.lower() in ASCIIDOC_SUFFIXES
+    text = _apply_toc_marker(text, is_asciidoc)
+    if is_asciidoc:
         body, title = render_asciidoc.render(text, log)
     else:
         body, title = render_markdown.render(text, log)

@@ -11,7 +11,8 @@ Java) sont embarquées dans le dossier de l'application.
 - **Markdown et AsciiDoc** : titres, tableaux, listes de tâches, notes de bas
   de page, admonitions AsciiDoc (`NOTE:`, `WARNING:`…)
 - **Coloration syntaxique** du code (Python, SQL, Java, etc. — via Pygments)
-- **Sommaire automatique** cliquable, avec numéros de page
+- **Sommaire automatique** cliquable, avec numéros de page — placé en tête par
+  défaut, ou à l'endroit de votre choix via un marqueur `[TOC]`
 - **Signets PDF** : arborescence des titres dans le volet de navigation du
   lecteur, et PDF tagué (accessible)
 - **Images locales embarquées** : les images `![](schema.png)` sont incluses
@@ -119,6 +120,18 @@ Dans un fichier **AsciiDoc** :
     ----
     Alice -> Bob : bonjour
     ----
+
+### Emplacement du sommaire
+
+Par défaut, le sommaire est placé au début du document. Pour le positionner
+vous-même (par exemple après une page de garde ou une introduction), insérez un
+marqueur sur une ligne seule à l'endroit voulu :
+
+- **Markdown** : `[TOC]` (ou `[[_TOC_]]`, `{{toc}}`, `<!-- toc -->`)
+- **AsciiDoc** : `toc::[]` (macro native)
+
+Le sommaire s'insère alors dans le flux du texte à cet endroit, sans forcer de
+saut de page. Avec `--no-toc`, le marqueur est simplement ignoré.
 
 ### Sauts de page manuels
 

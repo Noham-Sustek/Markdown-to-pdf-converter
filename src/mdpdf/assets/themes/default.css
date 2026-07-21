@@ -119,6 +119,9 @@ section.doc.first-doc { break-before: auto; }
 
 /* ---- Sommaire -------------------------------------------------------------- */
 .toc { break-after: page; }
+/* Sommaire placé manuellement (marqueur [TOC]) : il s'insère dans le flux du
+   texte, sans forcer de saut de page avant/après. */
+.toc-inline { break-before: auto; break-after: auto; }
 .toc-title {
   font-size: 17pt;
   border-bottom: 2px solid var(--color-accent);

@@ -83,11 +83,21 @@ def add_heading_ids(body: str, used_ids: set[str]) -> tuple[str, list[TocEntry]]
     return _HEADING_RE.sub(repl, body), entries
 
 
-def build_toc(entries: list[TocEntry], max_level: int = 3, heading: str = "Sommaire") -> str:
+# Emplacement du sommaire demandé par l'utilisateur dans son document.
+TOC_PLACEHOLDER = '<div class="mdpdf-toc"></div>'
+
+
+def build_toc(
+    entries: list[TocEntry],
+    max_level: int = 3,
+    heading: str = "Sommaire",
+    inline: bool = False,
+) -> str:
     items = [e for e in entries if e.level <= max_level]
     if not items:
         return ""
-    parts = [f'<nav class="toc"><h1 class="toc-title">{html.escape(heading)}</h1>']
+    css_class = "toc toc-inline" if inline else "toc"
+    parts = [f'<nav class="{css_class}"><h1 class="toc-title">{html.escape(heading)}</h1>']
     current = 0
     for entry in items:
         while current < entry.level:
@@ -234,12 +244,24 @@ def assemble(
     for section in sections:
         all_entries.extend(section.toc_entries)
 
-    if toc:
-        body_parts.append(build_toc(all_entries, toc_depth))
+    docs_html = "\n".join(
+        f'<section class="{"doc first-doc" if i == 0 else "doc"}">\n{section.html}\n</section>'
+        for i, section in enumerate(sections)
+    )
 
-    for i, section in enumerate(sections):
-        cls = "doc first-doc" if i == 0 else "doc"
-        body_parts.append(f'<section class="{cls}">\n{section.html}\n</section>')
+    # Placement du sommaire : à l'emplacement du marqueur ([TOC], toc::[]…) s'il
+    # est présent dans le document, sinon en tête. Sans sommaire, on retire le
+    # marqueur éventuel.
+    has_marker = TOC_PLACEHOLDER in docs_html
+    if toc and has_marker:
+        inline_toc = build_toc(all_entries, toc_depth, inline=True)
+        docs_html = docs_html.replace(TOC_PLACEHOLDER, inline_toc, 1)
+    elif toc:
+        body_parts.append(build_toc(all_entries, toc_depth))
+    # Retire les marqueurs restants (marqueur en trop, ou --no-toc).
+    docs_html = docs_html.replace(TOC_PLACEHOLDER, "")
+
+    body_parts.append(docs_html)
 
     replacements = {
         "__MDPDF_LANG__": html.escape(lang),
